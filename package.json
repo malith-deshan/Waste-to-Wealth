@@ -2,14 +2,6 @@
   "name": "waste-to-wealth",
   "version": "1.0.0",
   "description": "",
-  "homepage": "https://github.com/malith-deshan/Waste-to-Wealth#readme",
-  "bugs": {
-    "url": "https://github.com/malith-deshan/Waste-to-Wealth/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/malith-deshan/Waste-to-Wealth.git"
-  },
   "license": "ISC",
   "author": "",
   "type": "module",

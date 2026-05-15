@@ -5,8 +5,15 @@ import dotenv from "dotenv";
 import route from "./routes/wasteRoute.js";
 
 const app = express();
-app.use(bodyParser.json());
 dotenv.config();
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    if (req.method === "OPTIONS") return res.sendStatus(204);
+    next();
+});
+app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 5000;
 const MONGOURL = process.env.MONGO_URL;
