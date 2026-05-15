@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 const API_BASE =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api/waste";
+  import.meta.env.VITE_API_BASE_URL ?? "/api/waste";
 
 const WASTE_TYPES = ["Plastic", "Metal", "Paper", "Glass", "Organic", "E-waste", "Other"];
 
