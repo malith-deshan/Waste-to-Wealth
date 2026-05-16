@@ -15,9 +15,6 @@ export const create = async(req, res) => {
 export const fetch = async (req, res) => {
     try {
         const reports = await Waste.find();
-        if(reports.length === 0) {
-            return res.status(404).json({message: "No reports found."});
-        }
         res.status(200).json(reports);
     } catch (error) {
         res.status(500).json({error: "Internal Server Error."});

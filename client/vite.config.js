@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
         "/api": {
           target: apiTarget,
           changeOrigin: true,
+          secure: false,
         },
       },
     },

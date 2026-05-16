@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-
-const API_BASE =
-  import.meta.env.VITE_API_BASE_URL ?? "/api/waste";
+import {
+  createReport,
+  deleteReport,
+  getAllReports,
+  updateReport,
+} from "../api/wasteApi.js";
 
 const WASTE_TYPES = ["Plastic", "Metal", "Paper", "Glass", "Organic", "E-waste", "Other"];
 
@@ -10,6 +13,7 @@ const emptyForm = { description: "", location: "", wasteType: WASTE_TYPES[0] };
 export default function WasteLog() {
   const [reports, setReports] = useState([]);
   const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -19,15 +23,7 @@ export default function WasteLog() {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/getall`);
-      if (res.status === 404) {
-        setReports([]);
-        return;
-      }
-      if (!res.ok) {
-        throw new Error("Failed to load waste reports.");
-      }
-      const data = await res.json();
+      const data = await getAllReports();
       setReports(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.message ?? "Could not connect to the server.");
@@ -46,24 +42,40 @@ export default function WasteLog() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const cancelEdit = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+  };
+
+  const startEdit = (report) => {
+    setEditingId(report._id);
+    setForm({
+      description: report.description,
+      location: report.location,
+      wasteType: report.wasteType,
+    });
+    setError(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/create`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) {
-        throw new Error("Failed to create report.");
+      if (editingId) {
+        const updated = await updateReport(editingId, form);
+        setReports((prev) =>
+          prev.map((r) => (r._id === editingId ? updated : r))
+        );
+        cancelEdit();
+      } else {
+        const created = await createReport(form);
+        setReports((prev) => [created, ...prev]);
+        setForm(emptyForm);
       }
-      const created = await res.json();
-      setReports((prev) => [created, ...prev]);
-      setForm(emptyForm);
     } catch (err) {
-      setError(err.message ?? "Could not create report.");
+      setError(err.message ?? "Could not save report.");
     } finally {
       setSubmitting(false);
     }
@@ -74,11 +86,9 @@ export default function WasteLog() {
     setDeletingId(id);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/delete/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        throw new Error("Failed to delete report.");
-      }
+      await deleteReport(id);
       setReports((prev) => prev.filter((r) => r._id !== id));
+      if (editingId === id) cancelEdit();
     } catch (err) {
       setError(err.message ?? "Could not delete report.");
     } finally {
@@ -111,7 +121,9 @@ export default function WasteLog() {
         )}
 
         <section className="mb-10 rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm shadow-emerald-100/50">
-          <h2 className="text-lg font-semibold text-slate-900">New report</h2>
+          <h2 className="text-lg font-semibold text-slate-900">
+            {editingId ? "Edit report" : "New report"}
+          </h2>
           <p className="mt-1 text-sm text-slate-500">
             Describe the waste, where it is, and what type it is.
           </p>
@@ -156,14 +168,28 @@ export default function WasteLog() {
                 ))}
               </select>
             </label>
-            <div className="sm:col-span-2">
+            <div className="flex flex-wrap gap-3 sm:col-span-2">
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                className="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {submitting ? "Submitting…" : "Submit report"}
+                {submitting
+                  ? "Saving…"
+                  : editingId
+                    ? "Save changes"
+                    : "Submit report"}
               </button>
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  disabled={submitting}
+                  className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+              )}
             </div>
           </form>
         </section>
@@ -233,14 +259,24 @@ export default function WasteLog() {
                     </svg>
                     {report.location}
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(report._id)}
-                    disabled={deletingId === report._id}
-                    className="mt-4 w-full rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {deletingId === report._id ? "Deleting…" : "Delete"}
-                  </button>
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => startEdit(report)}
+                      disabled={deletingId === report._id}
+                      className="flex-1 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800 transition hover:bg-emerald-100 disabled:opacity-60"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(report._id)}
+                      disabled={deletingId === report._id}
+                      className="flex-1 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {deletingId === report._id ? "Deleting…" : "Delete"}
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>

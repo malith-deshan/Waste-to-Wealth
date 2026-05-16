@@ -16,8 +16,8 @@ app.use((req, res, next) => {
 app.use(bodyParser.json());
 app.use("/api/waste", route);
 
-const PORT = process.env.PORT || 5000;
-const MONGOURL = process.env.MONGO_URL;
+const PORT = Number(process.env.PORT?.trim()) || 5000;
+const MONGOURL = process.env.MONGO_URL?.trim().replace(/^"|"$/g, "");
 
 mongoose.connect(MONGOURL).then(() => {
     console.log("Database connected successfully.");
