@@ -1,7 +1,7 @@
 # 🌍 Community Waste-to-Wealth Log
 
 **Module:** Web Services and Technology (IT2234) — 2nd Year IT Project  
-**Author:** [Your Name] | **Institution:** [Your University] | **Academic Year:** 2025/2026
+**Author:** W.M.D.Pemasiri | **Institution:** University of Vavuniya | **Academic Year:** 2022/2023
 
 A full-stack web application that records community waste reports and connects citizens, recyclers, and environmental authorities through a RESTful Express.js API and a MongoDB persistence layer, with a React.js client for interactive data management and Postman-ready endpoint testing.
 
@@ -323,6 +323,6 @@ Replace `:id` with the `_id` returned from the create response.
 
 ## Academic integrity & evaluation notes
 
-This project was developed for **IT2234 — Web Services and Technology** to demonstrate RESTful service design, MongoDB integration, MVC layering, and client–server communication. Replace placeholder author and institution fields before submission. Do not commit `.env` files containing secrets to version control.
+This project was developed by **W.M.D.Pemasiri** at the **University of Vavuniya** (Academic Year **2022/2023**) for **IT2234 — Web Services and Technology** to demonstrate RESTful service design, MongoDB integration, MVC layering, and client–server communication. Do not commit `.env` files containing secrets to version control.
 
 **License:** Educational use — [specify if applicable]
